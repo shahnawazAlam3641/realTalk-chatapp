@@ -53,12 +53,19 @@ wss.on("connection", (socket) => {
                 }
             }
             if (type == "JOIN_WORLD") {
-                allSockets.set(uniqueId, socket);
+                const { author, message } = payload;
+                if (allSockets.has(author)) {
+                    socket.send("{'message':'username already exists'}");
+                    return;
+                }
+                allSockets.set(author, socket);
+                console.log(uniqueId + " WORLD CHAT JOINED");
             }
             if (type == "SEND_WORLD") {
-                if (allSockets.has(socket)) {
+                const { author, message } = payload;
+                if (allSockets.has(author)) {
                     allSockets.forEach((s) => {
-                        s.send(payload.message);
+                        s.send(`${author}: ${message}`);
                     });
                 }
                 else {
@@ -73,6 +80,9 @@ wss.on("connection", (socket) => {
     });
     socket.on("close", () => {
         console.log("Client disconnected");
+        if (allSockets.has(uniqueId)) {
+            allSockets.delete(uniqueId);
+        }
         // Remove the socket from all rooms
         rooms.forEach((clients, roomCode) => {
             if (clients.has(socket)) {
