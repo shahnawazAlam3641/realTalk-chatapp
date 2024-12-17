@@ -71,6 +71,24 @@ wss.on("connection", (socket) => {
         }
       }
 
+      if (type == "USERNAME_VALIDATION") {
+        const { username } = payload;
+        const isUsernameTaken = allSockets.has(username);
+
+        socket.send(
+          JSON.stringify({
+            type: "USERNAME_VALIDATION",
+            payload: {
+              isUsernameTaken: isUsernameTaken,
+            },
+          })
+        );
+
+        if (isUsernameTaken) {
+          socket.close();
+        }
+      }
+
       if (type == "JOIN_WORLD") {
         // const { author, message } = payload;
         if (allSockets.has(author)) {
