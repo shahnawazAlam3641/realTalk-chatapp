@@ -28,9 +28,9 @@ function App() {
 
         {!isWorldChat && (
           <Home
+            setCurrentAuthor={setCurrentAuthor}
             setIsWorldModal={setIsWorldModal}
             setIsWorldChat={setIsWorldChat}
-            isWorldModal={isWorldModal}
           />
         )}
 

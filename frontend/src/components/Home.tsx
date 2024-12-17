@@ -1,39 +1,139 @@
 import { useRef, useState } from "react";
+import toast from "react-hot-toast";
 
-const Home = ({ setIsWorldChat, setIsWorldModal, isWorldModal }) => {
+const Home = ({ setIsWorldChat, setIsWorldModal, setCurrentAuthor }) => {
   // const [worldModal, setWorldModal] = useState(false);
-  const [currentAuthor, setCurrentAuthor] = useState();
   const authorInputRef = useRef(null);
 
+  const [currentTab, setCurrentTab] = useState("Join World Chat");
+
+  const handleTabSwitch = (e) => {
+    setCurrentTab(e.target.innerText);
+  };
+
+  const handleJoinWorld = () => {
+    if (authorInputRef.current.value == "") {
+      toast.error("Please enter your username");
+      return;
+    }
+    if (currentTab == "Join World Chat") {
+      const wss = new WebSocket("ws://localhost:8080");
+
+      wss.onopen = () => {
+        wss.send(
+          JSON.stringify({
+            type: "USERNAME_VALIDATION",
+            payload: {
+              username: authorInputRef.current?.value,
+            },
+          })
+        );
+      };
+
+      wss.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type == "USERNAME_VALIDATION") {
+          if (!data.payload.isUsernameTaken) {
+            setCurrentAuthor(authorInputRef.current?.value);
+            setIsWorldChat(true);
+            setIsWorldModal(false);
+          } else {
+            toast.error("Username already exists");
+          }
+        }
+      };
+    }
+  };
+
   return (
-    <div className="relative flex flex-col gap-5 p-6 border-white border rounded-lg">
-      <button className="bg-white text-[#212121] p-5 rounded-md">
-        Create Room
-      </button>
-      <div className="flex gap-4">
-        <input placeholder="Enter Room Code" className="px-2 rounded-md" />
+    <div className="relative flex flex-col gap-5 p-6 border-white border rounded-lg w-[450px] max-w-[90vw]">
+      {/* <form
+        onSubmit={(e) => e.preventDefault()}
+        action="submit"
+        className="flex flex-col gap-2"
+      >
+        <input
+          type="text"
+          placeholder="Enter Unique Username"
+          className="p-2 rounded-md text-center"
+        />
         <button className="bg-white text-[#212121] p-2 rounded-md">
+          Create Room
+        </button>
+      </form> */}
+      <div className="flex justify-between">
+        <button
+          onClick={handleTabSwitch}
+          className={`p-2  rounded-md font-medium  ${
+            currentTab == "Join World Chat"
+              ? "bg-[#313131] text-white"
+              : "bg-white text-[#212121]"
+          }`}
+        >
+          Join World Chat
+        </button>
+        <button
+          onClick={handleTabSwitch}
+          className={`p-2  rounded-md font-medium  ${
+            currentTab == "Join Room"
+              ? "bg-[#313131] text-white"
+              : "bg-white text-[#212121]"
+          }`}
+        >
           Join Room
         </button>
+        <button
+          onClick={handleTabSwitch}
+          className={`p-2  rounded-md font-medium  ${
+            currentTab == "Create Room"
+              ? "bg-[#313131] text-white"
+              : "bg-white text-[#212121]"
+          }`}
+        >
+          Create Room
+        </button>
       </div>
-      <button
-        onClick={() => setIsWorldModal(true)}
-        className="bg-white text-[#212121] p-5 rounded-md"
+
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        action="submit"
+        className="flex flex-col gap-2"
       >
-        Join World Chat
-      </button>
-      {/* {isWorldModal && (
-        <div className="flex gap-4">
+        {currentTab == "Join Room" && (
           <input
-            ref={authorInputRef}
-            placeholder="Enter unique username to join"
-            className="px-2 rounded-md"
+            type="text"
+            placeholder="Enter Room Code"
+            className="p-2 rounded-md text-center"
           />
-          <button onClick={} className="bg-white text-[#212121] p-2 rounded-md">
-            Join
-          </button>
-        </div>
-      )} */}
+        )}
+        <input
+          ref={authorInputRef}
+          type="text"
+          placeholder="Enter Unique Username"
+          className="p-2 rounded-md text-center"
+        />
+        <button
+          onClick={handleJoinWorld}
+          className="bg-white text-[#212121] p-2 rounded-md"
+        >
+          {currentTab}
+        </button>
+      </form>
+      {/* <form
+        onSubmit={(e) => e.preventDefault()}
+        action="submit"
+        className="flex flex-col gap-2"
+      >
+        <input
+          type="text"
+          placeholder="Enter Unique Username"
+          className="p-2 rounded-md text-center"
+        />
+        <button className="bg-white text-[#212121] p-2 rounded-md">
+          Join World Chat
+        </button>
+      </form> */}
     </div>
   );
 };
