@@ -27,7 +27,7 @@ const JoinWorldModal = ({
               wss.onopen = () => {
                 wss.send(
                   JSON.stringify({
-                    type: "USERNAME_VALIDATION",
+                    type: "USERNAME_VALIDATION_WORLD",
                     payload: {
                       username: authorInputRef.current.value,
                     },
@@ -38,7 +38,7 @@ const JoinWorldModal = ({
               wss.onmessage = (event) => {
                 const data = JSON.parse(event.data);
 
-                if (data.type == "USERNAME_VALIDATION") {
+                if (data.type == "USERNAME_VALIDATION_WORLD") {
                   if (!data.payload.isUsernameTaken) {
                     setCurrentAuthor(authorInputRef.current?.value);
                     setIsWorldChat(true);

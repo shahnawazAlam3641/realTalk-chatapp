@@ -13,35 +13,35 @@ interface payload {
   message: string;
 }
 
-const WorldChat = ({ setIsWorldChat }) => {
+const WorldChat = ({ setIsWorldChat, setCurrentChatBox }) => {
   const currentAuthor: string = useContext(UserContext);
   console.log(typeof currentAuthor);
-  const inputRef = useRef(null);
+  // const inputRef = useRef(null);
   // const { message, sendMessage } = useWebSocket("ws://localhost:8080");
   // const [socket, setSocket] = useState<WebSocket>();
   const socketRef = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<payload[]>([]);
 
-  const sendMessage = (message) => {
-    if (socketRef.current && socketRef.current.readyState == WebSocket.OPEN) {
-      socketRef.current?.send(JSON.stringify(message));
-    }
-  };
+  // const sendMessage = (message) => {
+  //   if (socketRef.current && socketRef.current.readyState == WebSocket.OPEN) {
+  //     socketRef.current?.send(JSON.stringify(message));
+  //   }
+  // };
 
-  const handleSendMessage = () => {
-    if (inputRef.current.value == "") {
-      return;
-    } else {
-      sendMessage({
-        type: "SEND_WORLD",
-        payload: {
-          author: currentAuthor,
-          message: inputRef.current?.value,
-        },
-      });
-      inputRef.current.value = "";
-    }
-  };
+  // const handleSendMessage = () => {
+  //   if (inputRef.current.value == "") {
+  //     return;
+  //   } else {
+  //     sendMessage({
+  //       type: "SEND_WORLD",
+  //       payload: {
+  //         author: currentAuthor,
+  //         message: inputRef.current?.value,
+  //       },
+  //     });
+  //     inputRef.current.value = "";
+  //   }
+  // };
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080");
@@ -79,35 +79,11 @@ const WorldChat = ({ setIsWorldChat }) => {
 
   return (
     <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-end gap-2 rounded-lg">
-      <ChatBox message={message} />
-      <div>
-        <form
-          action="submit"
-          onSubmit={(e) => e.preventDefault()}
-          className="flex gap-1 h-[10%]"
-        >
-          <input
-            ref={inputRef}
-            placeholder="Type message"
-            className="rounded-md px-5 w-full"
-          />
-          <button
-            onClick={() =>
-              // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${inputRef.current?.value}}}`)
-              handleSendMessage()
-            }
-            className="p-2 bg-white rounded-md"
-          >
-            Send
-          </button>
-          <button
-            onClick={() => setIsWorldChat(false)}
-            className="p-2 bg-red-400 text-[#212121] rounded-md "
-          >
-            Exit
-          </button>
-        </form>
-      </div>
+      <ChatBox
+        socketRef={socketRef}
+        setCurrentChatBox={setCurrentChatBox}
+        message={message}
+      />
     </div>
   );
 };

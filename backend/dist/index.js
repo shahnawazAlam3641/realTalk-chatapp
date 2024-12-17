@@ -14,25 +14,40 @@ wss.on("connection", (socket) => {
     console.log(`Client connected with ID: ${uniqueId}`);
     console.log(`Total connected clients: ${allSockets.size}`);
     socket.on("message", (message) => {
-        var _a;
+        var _a, _b, _c, _d;
         try {
+            console.log("first");
             console.log(message.toString());
             const parsedMessage = JSON.parse(message.toString());
             const { type, payload } = parsedMessage;
             const { author, sentMessage } = payload;
             currentUser = author;
+            if (type == "USERNAME_VALIDATION_ROOM") {
+                const { author, roomCode } = payload;
+                const isUsernameTaken = (_a = rooms.get(roomCode)) === null || _a === void 0 ? void 0 : _a.has(author);
+                socket.send(JSON.stringify({
+                    type: "USERNAME_VALIDATION_ROOM",
+                    payload: {
+                        isUsernameTaken: isUsernameTaken,
+                    },
+                }));
+                if (isUsernameTaken) {
+                    socket.close();
+                }
+            }
             if (type == "CREATE_ROOM") {
                 const roomCode = generateUniqueRoomCode();
+                console.log(roomCode);
                 if (!rooms.has(roomCode)) {
-                    rooms.set(roomCode, new Set([socket]));
+                    rooms.set(roomCode, new Map());
                     console.log(`Room created: ${roomCode}`);
                     socket.send(JSON.stringify({ type: "ROOM_CREATED", roomCode }));
                 }
             }
             if (type == "JOIN_ROOM") {
-                const { roomCode } = payload;
+                const { roomCode, author } = payload;
                 if (rooms.has(roomCode)) {
-                    rooms.get(roomCode).add(socket);
+                    (_b = rooms.get(roomCode)) === null || _b === void 0 ? void 0 : _b.set(author, socket);
                     console.log(`Client joined room: ${roomCode}`);
                     socket.send(JSON.stringify({ type: "ROOM_JOINED", roomCode }));
                 }
@@ -41,11 +56,14 @@ wss.on("connection", (socket) => {
                 }
             }
             if (type == "SEND_MESSAGE") {
-                const { roomCode, message } = payload;
-                if ((_a = rooms.get(roomCode)) === null || _a === void 0 ? void 0 : _a.has(socket)) {
+                const { roomCode, message, author } = payload;
+                console.log((_c = rooms.get(roomCode)) === null || _c === void 0 ? void 0 : _c.has(author));
+                if ((_d = rooms.get(roomCode)) === null || _d === void 0 ? void 0 : _d.has(author)) {
+                    console.log("condition passed");
                     rooms.get(roomCode).forEach((client) => {
+                        // console.log(client);
                         if (client.readyState === ws_1.WebSocket.OPEN) {
-                            client.send(message);
+                            client.send(JSON.stringify(payload));
                         }
                     });
                 }
@@ -56,11 +74,11 @@ wss.on("connection", (socket) => {
                     }));
                 }
             }
-            if (type == "USERNAME_VALIDATION") {
+            if (type == "USERNAME_VALIDATION_WORLD") {
                 const { username } = payload;
                 const isUsernameTaken = allSockets.has(username);
                 socket.send(JSON.stringify({
-                    type: "USERNAME_VALIDATION",
+                    type: "USERNAME_VALIDATION_WORLD",
                     payload: {
                         isUsernameTaken: isUsernameTaken,
                     },
@@ -94,7 +112,7 @@ wss.on("connection", (socket) => {
         }
         catch (error) {
             console.log(error);
-            socket.send("error occured");
+            socket.send("error occured while sending message to world chat");
         }
     });
     socket.on("close", () => {

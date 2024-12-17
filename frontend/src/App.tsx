@@ -4,9 +4,12 @@ import "./App.css";
 import WorldChat from "./components/WorldChat";
 import JoinWorldModal from "./components/JoinWorldModal";
 import UserContext from "./context";
+import RoomChat from "./components/RoomChat";
 
 function App() {
-  const [isWorldChat, setIsWorldChat] = useState(false);
+  // const [isWorldChat, setIsWorldChat] = useState(false);
+  // const [isRoomChat, setIsRoomChat] = useState(false);
+  const [currentChatBox, setCurrentChatBox] = useState("");
   const [isWorldModal, setIsWorldModal] = useState(false);
   const [currentAuthor, setCurrentAuthor] = useState();
 
@@ -26,17 +29,27 @@ function App() {
 
         {/* home */}
 
-        {!isWorldChat && (
+        {currentChatBox == "" && (
           <Home
             setCurrentAuthor={setCurrentAuthor}
+            setCurrentChatBox={setCurrentChatBox}
             setIsWorldModal={setIsWorldModal}
-            setIsWorldChat={setIsWorldChat}
+            // setIsWorldChat={setIsWorldChat}
           />
         )}
 
         {/* world Chat */}
 
-        {isWorldChat && <WorldChat setIsWorldChat={setIsWorldChat} />}
+        {currentChatBox == "World Chat" && (
+          <WorldChat setCurrentChatBox={setCurrentChatBox} />
+        )}
+
+        {currentChatBox == "Room Chat" && (
+          <RoomChat
+            currentChatBox={currentChatBox}
+            setCurrentChatBox={setCurrentChatBox}
+          />
+        )}
       </div>
     </UserContext.Provider>
   );

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-const Home = ({ setIsWorldChat, setIsWorldModal, setCurrentAuthor }) => {
+const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
   // const [worldModal, setWorldModal] = useState(false);
   const authorInputRef = useRef(null);
 
@@ -12,17 +12,64 @@ const Home = ({ setIsWorldChat, setIsWorldModal, setCurrentAuthor }) => {
   };
 
   const handleJoinWorld = () => {
-    if (authorInputRef.current.value == "") {
+    if (authorInputRef.current?.value == "") {
       toast.error("Please enter your username");
       return;
     }
-    if (currentTab == "Join World Chat") {
-      const wss = new WebSocket("ws://localhost:8080");
+
+    const wss = new WebSocket("ws://localhost:8080");
+
+    if (currentTab == "Create Room") {
+      // const wss = new WebSocket("ws://localhost:8080");
 
       wss.onopen = () => {
         wss.send(
           JSON.stringify({
-            type: "USERNAME_VALIDATION",
+            type: "CREATE_ROOM",
+            payload: {
+              author: authorInputRef.current?.value,
+            },
+          })
+        );
+      };
+
+      wss.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log(data);
+
+        if (data.type == "ROOM_JOINED") {
+          setCurrentChatBox("Room Chat");
+        }
+
+        if (data.type == "ROOM_CREATED") {
+          // if (!data.payload.isUsernameTaken) {
+          setCurrentAuthor(authorInputRef.current?.value);
+
+          wss.send(
+            JSON.stringify({
+              type: "JOIN_ROOM",
+              payload: {
+                roomCode: data.roomCode,
+                author: authorInputRef.current?.value,
+              },
+            })
+          );
+          // setCurrentChatBox("Room Chat");
+          // setIsWorldChat(true);
+          // } else {
+          //   toast.error("Username already exists");
+          // }
+        }
+      };
+    }
+
+    if (currentTab == "Join World Chat") {
+      // const wss = new WebSocket("ws://localhost:8080");
+
+      wss.onopen = () => {
+        wss.send(
+          JSON.stringify({
+            type: "USERNAME_VALIDATION_WORLD",
             payload: {
               username: authorInputRef.current?.value,
             },
@@ -33,11 +80,11 @@ const Home = ({ setIsWorldChat, setIsWorldModal, setCurrentAuthor }) => {
       wss.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        if (data.type == "USERNAME_VALIDATION") {
+        if (data.type == "USERNAME_VALIDATION_WORLD") {
           if (!data.payload.isUsernameTaken) {
             setCurrentAuthor(authorInputRef.current?.value);
-            setIsWorldChat(true);
-            setIsWorldModal(false);
+            setCurrentChatBox("World Chat");
+            // setIsWorldChat(true);
           } else {
             toast.error("Username already exists");
           }
