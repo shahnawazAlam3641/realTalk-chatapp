@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 import UserContext from "../context";
+import ChatBox from "./ChatBox";
 
 interface message {
   type: string;
@@ -28,14 +29,18 @@ const WorldChat = ({ setIsWorldChat }) => {
   };
 
   const handleSendMessage = () => {
-    sendMessage({
-      type: "SEND_WORLD",
-      payload: {
-        author: currentAuthor,
-        message: inputRef.current?.value,
-      },
-    });
-    inputRef.current.value = "";
+    if (inputRef.current.value == "") {
+      return;
+    } else {
+      sendMessage({
+        type: "SEND_WORLD",
+        payload: {
+          author: currentAuthor,
+          message: inputRef.current?.value,
+        },
+      });
+      inputRef.current.value = "";
+    }
   };
 
   useEffect(() => {
@@ -74,46 +79,34 @@ const WorldChat = ({ setIsWorldChat }) => {
 
   return (
     <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-end gap-2 rounded-lg">
-      <div className="max-h-[90%] flex flex-col gap-2 overflow-y-auto">
-        {message.map((mess, index) => {
-          return (
-            <p
-              key={index}
-              className={`p-1 bg-white rounded-sm w-fit max-w-[80%] flex flex-col ${
-                mess.author == currentAuthor
-                  ? "ml-auto bg-[#515151] text-white"
-                  : ""
-              }`}
-            >
-              {mess.author !== currentAuthor && (
-                <span className="underline text-xs">{mess.author}:</span>
-              )}
-              <span>{mess.message}</span>
-            </p>
-          );
-        })}
-      </div>
-      <div className="flex gap-1 h-[10%]">
-        <input
-          ref={inputRef}
-          placeholder="Type message"
-          className="rounded-md px-5 w-full"
-        />
-        <button
-          onClick={() =>
-            // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${inputRef.current?.value}}}`)
-            handleSendMessage()
-          }
-          className="p-2 bg-white rounded-md"
+      <ChatBox message={message} />
+      <div>
+        <form
+          action="submit"
+          onSubmit={(e) => e.preventDefault()}
+          className="flex gap-1 h-[10%]"
         >
-          Send
-        </button>
-        <button
-          onClick={() => setIsWorldChat(false)}
-          className="p-2 bg-red-400 text-[#212121] rounded-md "
-        >
-          Exit
-        </button>
+          <input
+            ref={inputRef}
+            placeholder="Type message"
+            className="rounded-md px-5 w-full"
+          />
+          <button
+            onClick={() =>
+              // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${inputRef.current?.value}}}`)
+              handleSendMessage()
+            }
+            className="p-2 bg-white rounded-md"
+          >
+            Send
+          </button>
+          <button
+            onClick={() => setIsWorldChat(false)}
+            className="p-2 bg-red-400 text-[#212121] rounded-md "
+          >
+            Exit
+          </button>
+        </form>
       </div>
     </div>
   );

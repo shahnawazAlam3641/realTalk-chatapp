@@ -14,7 +14,7 @@ function App() {
 
   return (
     <UserContext.Provider value={currentAuthor}>
-      <div className="min-h-screen min-w-[100vw] bg-[#212121] flex justify-center items-center">
+      <div className="relative min-h-screen min-w-[100vw] bg-[#212121] flex justify-center items-center">
         {isWorldModal && (
           <JoinWorldModal
             setIsWorldModal={setIsWorldModal}
