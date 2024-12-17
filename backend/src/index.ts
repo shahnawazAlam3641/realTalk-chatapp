@@ -14,14 +14,19 @@ const rooms = new Map();
 wss.on("connection", (socket) => {
   const uniqueId = Math.floor(Math.random() * 10000).toString();
 
+  let currentUser: string;
+
   console.log(`Client connected with ID: ${uniqueId}`);
   console.log(`Total connected clients: ${allSockets.size}`);
 
   socket.on("message", (message) => {
     try {
+      console.log(message.toString());
       const parsedMessage = JSON.parse(message.toString());
 
       const { type, payload } = parsedMessage;
+      const { author, sentMessage } = payload;
+      currentUser = author;
 
       if (type == "CREATE_ROOM") {
         const roomCode = generateUniqueRoomCode();
@@ -67,7 +72,7 @@ wss.on("connection", (socket) => {
       }
 
       if (type == "JOIN_WORLD") {
-        const { author, message } = payload;
+        // const { author, message } = payload;
         if (allSockets.has(author)) {
           socket.send("{'message':'username already exists'}");
           return;
@@ -80,7 +85,9 @@ wss.on("connection", (socket) => {
         const { author, message } = payload;
         if (allSockets.has(author)) {
           allSockets.forEach((s) => {
-            s.send(`${author}: ${message}`);
+            console.log(`"${author}":"${message}"`);
+            // s.send(`${author}: ${message}`);
+            s.send(`{"author":"${author}","message":"${message}"}`);
           });
         } else {
           socket.send(
@@ -96,8 +103,8 @@ wss.on("connection", (socket) => {
 
   socket.on("close", () => {
     console.log("Client disconnected");
-    if (allSockets.has(uniqueId)) {
-      allSockets.delete(uniqueId);
+    if (allSockets.has(currentUser)) {
+      allSockets.delete(currentUser);
     }
     // Remove the socket from all rooms
     rooms.forEach((clients, roomCode) => {
@@ -113,7 +120,7 @@ wss.on("connection", (socket) => {
   });
 
   socket.on("error", (error) => {
-    console.error(`Error on socket ${uniqueId}:`, error);
+    console.error(`Error on socket ${currentUser}:`, error);
   });
 });
 
