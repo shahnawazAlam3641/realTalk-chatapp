@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 
 const Home = ({
   roomCode,
+  currentChatBox,
   setRoomCode,
   setCurrentAuthor,
   setCurrentChatBox,
@@ -23,6 +24,8 @@ const Home = ({
       toast.error("Please enter your username");
       return;
     }
+
+    setCurrentAuthor(authorInputRef.current?.value);
 
     const wss = new WebSocket("ws://localhost:8080");
 
@@ -47,22 +50,24 @@ const Home = ({
           if (data.payload.isUsernameTaken) {
             toast.error("Username already exist");
           } else {
-            wss.send(
-              JSON.stringify({
-                type: "JOIN_ROOM",
-                payload: {
-                  author: authorInputRef.current?.value,
-                  roomCode: roomCodeInputRef.current?.value,
-                },
-              })
-            );
+            setCurrentChatBox("Room Chat");
+            return;
+            // wss.send(
+            //   JSON.stringify({
+            //     type: "JOIN_ROOM",
+            //     payload: {
+            //       author: authorInputRef.current?.value,
+            //       roomCode: roomCodeInputRef.current?.value,
+            //     },
+            //   })
+            // );
           }
         }
 
-        if (data.type == "ROOM_JOINED") {
-          setCurrentAuthor(authorInputRef.current?.value);
-          setCurrentChatBox("Room Chat");
-        }
+        // if (data.type == "ROOM_JOINED") {
+        //   setCurrentAuthor(authorInputRef.current?.value);
+        //   setCurrentChatBox("Room Chat");
+        // }
 
         // if (data.type == "ROOM_CREATED") {
         //   // if (!data.payload.isUsernameTaken) {

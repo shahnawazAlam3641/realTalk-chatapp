@@ -25,13 +25,17 @@ function App() {
             setCurrentTab={setCurrentTab}
             setCurrentAuthor={setCurrentAuthor}
             setCurrentChatBox={setCurrentChatBox}
+            currentChatBox={currentChatBox}
           />
         )}
 
         {/* world Chat */}
 
         {currentChatBox == "World Chat" && (
-          <WorldChat setCurrentChatBox={setCurrentChatBox} />
+          <WorldChat
+            setCurrentChatBox={setCurrentChatBox}
+            currentChatBox={currentChatBox}
+          />
         )}
 
         {currentChatBox == "Room Chat" && (

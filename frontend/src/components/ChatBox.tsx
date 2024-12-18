@@ -36,6 +36,7 @@ const ChatBox = ({
     }
 
     if (currentChatBox == "World Chat") {
+      console.log("messagesent");
       sendMessage({
         type: "SEND_WORLD",
         payload: {
@@ -54,7 +55,21 @@ const ChatBox = ({
     console.log(container.scrollTop);
     console.log(container.scrollHeight);
 
-    if (container.scrollTop > container.scrollHeight - 450) {
+    // if (container.scrollTop > container.scrollHeight - 450) {
+    //   container.scrollTop = container.scrollHeight;
+    // }
+
+    const isNearBottom = (container) => {
+      // Allow a small threshold (e.g., 100px) to consider the user "near" the bottom
+      // const threshold = 200;
+      return (
+        container.scrollHeight - container.scrollTop - container.clientHeight <=
+        200
+      );
+    };
+
+    // Check if the user is near the bottom, then scroll to the bottom
+    if (isNearBottom(container)) {
       container.scrollTop = container.scrollHeight;
     }
 
@@ -69,7 +84,6 @@ const ChatBox = ({
         ref={chatBoxRef}
         className="max-h-[90%] flex flex-col gap-2 overflow-y-auto px-3 scroll-smooth"
       >
-        {roomCode}
         {message?.map((mess, index) => {
           return (
             <p
@@ -99,10 +113,10 @@ const ChatBox = ({
           className="rounded-md px-5 w-full"
         />
         <button
-          onClick={() =>
+          onClick={() => {
+            handleSendMessage();
             // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${inputRef.current?.value}}}`)
-            handleSendMessage()
-          }
+          }}
           className="p-2 bg-white rounded-md"
         >
           Send

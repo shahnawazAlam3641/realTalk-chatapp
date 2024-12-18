@@ -75,10 +75,10 @@ wss.on("connection", (socket) => {
       if (type == "SEND_MESSAGE") {
         const { roomCode, message, author } = payload;
 
-        console.log(rooms.get(roomCode)?.has(author));
+        // console.log(rooms.get(roomCode)?.has(author));
 
         if (rooms.get(roomCode)?.has(author)) {
-          console.log("condition passed");
+          // console.log("condition passed");
           rooms.get(roomCode).forEach((client: any) => {
             // console.log(client);
             if (client.readyState === WebSocket.OPEN) {
@@ -129,7 +129,13 @@ wss.on("connection", (socket) => {
           allSockets.forEach((s) => {
             console.log(`"${author}":"${message}"`);
             // s.send(`${author}: ${message}`);
-            s.send(`{"author":"${author}","message":"${message}"}`);
+            // s.send(`{"author":"${author}","message":"${message}"}`);
+            s.send(
+              JSON.stringify({
+                author: author,
+                message: message,
+              })
+            );
           });
         } else {
           socket.send(

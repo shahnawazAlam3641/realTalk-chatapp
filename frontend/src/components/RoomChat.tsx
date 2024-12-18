@@ -43,10 +43,8 @@ const RoomChat = ({
     };
 
     ws.onmessage = (event) => {
-      console.log(typeof event.data);
-      console.log(event.data);
-
       const data = JSON.parse(event.data);
+      console.log(data);
 
       if (data.type == "ROOM_CREATED") {
         console.log(data);
@@ -62,7 +60,8 @@ const RoomChat = ({
           console.log("Room Joined Successfully");
           setCurrentChatBox("Room Chat");
         }
-      } else {
+      } else if (data.author && data.roomCode && data.message) {
+        console.log("firstfirstfirstfirstfirstfirst", data);
         setMessage((prev) => [...prev, data]);
       }
     };
@@ -82,7 +81,18 @@ const RoomChat = ({
     };
   }, []);
   return (
-    <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-end gap-2 rounded-lg">
+    <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-between gap-2 rounded-lg">
+      <div
+        className="text-lg font-bold flex gap-3 p-2 hover:bg-[#313131] w-fit rounded-md text-white cursor-pointer "
+        title="Click to Copy"
+      >
+        Room Code:{" "}
+        <span
+          onClick={(e) => navigator.clipboard.writeText(e.target.innerText)}
+        >
+          {roomCode}
+        </span>
+      </div>
       <ChatBox
         roomCode={roomCode}
         currentChatBox={currentChatBox}
