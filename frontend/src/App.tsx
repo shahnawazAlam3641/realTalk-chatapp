@@ -1,40 +1,30 @@
-import { createContext, useRef, useState } from "react";
+import { useState } from "react";
 import Home from "./components/Home";
 import "./App.css";
 import WorldChat from "./components/WorldChat";
-import JoinWorldModal from "./components/JoinWorldModal";
 import UserContext from "./context";
 import RoomChat from "./components/RoomChat";
 
 function App() {
-  // const [isWorldChat, setIsWorldChat] = useState(false);
-  // const [isRoomChat, setIsRoomChat] = useState(false);
   const [currentChatBox, setCurrentChatBox] = useState("");
-  const [isWorldModal, setIsWorldModal] = useState(false);
-  const [currentAuthor, setCurrentAuthor] = useState();
+  const [currentTab, setCurrentTab] = useState("Join World Chat");
+  const [roomCode, setRoomCode] = useState("");
 
-  const authorInputRef = useRef(null);
+  const [currentAuthor, setCurrentAuthor] = useState("");
 
   return (
     <UserContext.Provider value={currentAuthor}>
       <div className="relative min-h-screen min-w-[100vw] bg-[#212121] flex justify-center items-center">
-        {isWorldModal && (
-          <JoinWorldModal
-            setIsWorldModal={setIsWorldModal}
-            setIsWorldChat={setIsWorldChat}
-            authorInputRef={authorInputRef}
-            setCurrentAuthor={setCurrentAuthor}
-          />
-        )}
-
         {/* home */}
 
         {currentChatBox == "" && (
           <Home
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            currentTab={currentTab}
+            setCurrentTab={setCurrentTab}
             setCurrentAuthor={setCurrentAuthor}
             setCurrentChatBox={setCurrentChatBox}
-            setIsWorldModal={setIsWorldModal}
-            // setIsWorldChat={setIsWorldChat}
           />
         )}
 
@@ -46,6 +36,10 @@ function App() {
 
         {currentChatBox == "Room Chat" && (
           <RoomChat
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            setCurrentTab={setCurrentTab}
+            currentTab={currentTab}
             currentChatBox={currentChatBox}
             setCurrentChatBox={setCurrentChatBox}
           />

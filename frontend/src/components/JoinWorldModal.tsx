@@ -1,12 +1,7 @@
 import React from "react";
 import toast from "react-hot-toast";
 
-const JoinWorldModal = ({
-  setCurrentAuthor,
-  authorInputRef,
-  setIsWorldChat,
-  setIsWorldModal,
-}) => {
+const JoinWorldModal = ({ setCurrentAuthor, authorInputRef }) => {
   return (
     <>
       <div className="z-20 bg-black  absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2  flex gap-4 border border-white p-10 rounded-md">

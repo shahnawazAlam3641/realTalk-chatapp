@@ -3,9 +3,7 @@ import UserContext from "../context";
 
 const ChatBox = ({
   message,
-  setIsWorldChat,
   socketRef,
-  setIsRoomChat,
   setCurrentChatBox,
   currentChatBox,
   roomCode,
@@ -71,6 +69,7 @@ const ChatBox = ({
         ref={chatBoxRef}
         className="max-h-[90%] flex flex-col gap-2 overflow-y-auto px-3 scroll-smooth"
       >
+        {roomCode}
         {message?.map((mess, index) => {
           return (
             <p

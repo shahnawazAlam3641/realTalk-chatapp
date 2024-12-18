@@ -13,7 +13,7 @@ interface payload {
   message: string;
 }
 
-const WorldChat = ({ setIsWorldChat, setCurrentChatBox }) => {
+const WorldChat = ({ setCurrentChatBox }) => {
   const currentAuthor: string = useContext(UserContext);
   console.log(typeof currentAuthor);
   // const inputRef = useRef(null);

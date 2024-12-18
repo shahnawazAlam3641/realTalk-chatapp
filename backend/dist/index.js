@@ -16,8 +16,8 @@ wss.on("connection", (socket) => {
     socket.on("message", (message) => {
         var _a, _b, _c, _d;
         try {
-            console.log("first");
-            console.log(message.toString());
+            // console.log("first");
+            // console.log(message.toString());
             const parsedMessage = JSON.parse(message.toString());
             const { type, payload } = parsedMessage;
             const { author, sentMessage } = payload;
@@ -46,6 +46,7 @@ wss.on("connection", (socket) => {
             }
             if (type == "JOIN_ROOM") {
                 const { roomCode, author } = payload;
+                console.log(rooms.has(roomCode));
                 if (rooms.has(roomCode)) {
                     (_b = rooms.get(roomCode)) === null || _b === void 0 ? void 0 : _b.set(author, socket);
                     console.log(`Client joined room: ${roomCode}`);
@@ -112,7 +113,7 @@ wss.on("connection", (socket) => {
         }
         catch (error) {
             console.log(error);
-            socket.send("error occured while sending message to world chat");
+            socket.send("error occured");
         }
     });
     socket.on("close", () => {

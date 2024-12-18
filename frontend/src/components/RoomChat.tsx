@@ -8,11 +8,17 @@ interface payload {
   roomCode?: string;
 }
 
-const RoomChat = ({ setIsRoomChat, setCurrentChatBox, currentChatBox }) => {
+const RoomChat = ({
+  setCurrentChatBox,
+  currentChatBox,
+  currentTab,
+  roomCode,
+  setRoomCode,
+  setCurrentTab,
+}) => {
   const currentAuthor = useContext(UserContext);
   const socketRef = useRef();
   const [message, setMessage] = useState<payload[]>([]);
-  const [roomCode, setRoomCode] = useState("");
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080");
@@ -21,9 +27,18 @@ const RoomChat = ({ setIsRoomChat, setCurrentChatBox, currentChatBox }) => {
     ws.onopen = () => {
       console.log("WebSocket connection established");
       console.log("message sent on joining");
-      ws.send(
-        `{"type": "CREATE_ROOM", "payload":{"author":"${currentAuthor}","message":"let me in"}}`
-      ); // Send the initial message after connection
+      if (currentTab == "Create Room") {
+        ws.send(
+          `{"type": "CREATE_ROOM", "payload":{"author":"${currentAuthor}","message":"let me in"}}`
+        ); // Send the initial message after connection
+      } else if (currentTab == "Join Room") {
+        ws.send(
+          JSON.stringify({
+            type: "JOIN_ROOM",
+            payload: { author: currentAuthor, roomCode: roomCode },
+          })
+        );
+      }
       console.log("message sent on joining");
     };
 
@@ -67,14 +82,14 @@ const RoomChat = ({ setIsRoomChat, setCurrentChatBox, currentChatBox }) => {
     };
   }, []);
   return (
-    <div>
+    <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-end gap-2 rounded-lg">
       <ChatBox
         roomCode={roomCode}
         currentChatBox={currentChatBox}
         socketRef={socketRef}
         message={message}
         setCurrentChatBox={setCurrentChatBox}
-        setIsRoomChat={setIsRoomChat}
+        // setIsRoomChat={setIsRoomChat}
       />
     </div>
   );

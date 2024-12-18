@@ -1,17 +1,24 @@
 import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
-  // const [worldModal, setWorldModal] = useState(false);
+const Home = ({
+  roomCode,
+  setRoomCode,
+  setCurrentAuthor,
+  setCurrentChatBox,
+  currentTab,
+  setCurrentTab,
+}) => {
   const authorInputRef = useRef(null);
 
-  const [currentTab, setCurrentTab] = useState("Join World Chat");
+  // const [currentTab, setCurrentTab] = useState("Join World Chat");
+  const roomCodeInputRef = useState(null);
 
   const handleTabSwitch = (e) => {
     setCurrentTab(e.target.innerText);
   };
 
-  const handleJoinWorld = () => {
+  const handleJoin = () => {
     if (authorInputRef.current?.value == "") {
       toast.error("Please enter your username");
       return;
@@ -19,9 +26,67 @@ const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
 
     const wss = new WebSocket("ws://localhost:8080");
 
-    if (currentTab == "Create Room") {
-      // const wss = new WebSocket("ws://localhost:8080");
+    if (currentTab == "Join Room") {
+      setRoomCode(roomCodeInputRef.current?.value);
+      wss.onopen = () => {
+        wss.send(
+          JSON.stringify({
+            type: "USERNAME_VALIDATION_ROOM",
+            payload: {
+              author: authorInputRef.current?.value,
+              roomCode: roomCodeInputRef.current?.value,
+            },
+          })
+        );
+      };
 
+      wss.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type == "USERNAME_VALIDATION_ROOM") {
+          if (data.payload.isUsernameTaken) {
+            toast.error("Username already exist");
+          } else {
+            wss.send(
+              JSON.stringify({
+                type: "JOIN_ROOM",
+                payload: {
+                  author: authorInputRef.current?.value,
+                  roomCode: roomCodeInputRef.current?.value,
+                },
+              })
+            );
+          }
+        }
+
+        if (data.type == "ROOM_JOINED") {
+          setCurrentAuthor(authorInputRef.current?.value);
+          setCurrentChatBox("Room Chat");
+        }
+
+        // if (data.type == "ROOM_CREATED") {
+        //   // if (!data.payload.isUsernameTaken) {
+        //   setCurrentAuthor(authorInputRef.current?.value);
+
+        //   wss.send(
+        //     JSON.stringify({
+        //       type: "JOIN_ROOM",
+        //       payload: {
+        //         roomCode: data.roomCode,
+        //         author: authorInputRef.current?.value,
+        //       },
+        //     })
+        //   );
+        //   // setCurrentChatBox("Room Chat");
+        //   // setIsWorldChat(true);
+        //   // } else {
+        //   //   toast.error("Username already exists");
+        //   // }
+        // }
+      };
+    }
+
+    if (currentTab == "Create Room") {
       wss.onopen = () => {
         wss.send(
           JSON.stringify({
@@ -35,7 +100,6 @@ const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
 
       wss.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log(data);
 
         if (data.type == "ROOM_JOINED") {
           setCurrentChatBox("Room Chat");
@@ -95,20 +159,6 @@ const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
 
   return (
     <div className="relative flex flex-col gap-5 p-6 border-white border rounded-lg w-[450px] max-w-[90vw]">
-      {/* <form
-        onSubmit={(e) => e.preventDefault()}
-        action="submit"
-        className="flex flex-col gap-2"
-      >
-        <input
-          type="text"
-          placeholder="Enter Unique Username"
-          className="p-2 rounded-md text-center"
-        />
-        <button className="bg-white text-[#212121] p-2 rounded-md">
-          Create Room
-        </button>
-      </form> */}
       <div className="flex justify-between">
         <button
           onClick={handleTabSwitch}
@@ -149,6 +199,7 @@ const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
       >
         {currentTab == "Join Room" && (
           <input
+            ref={roomCodeInputRef}
             type="text"
             placeholder="Enter Room Code"
             className="p-2 rounded-md text-center"
@@ -161,26 +212,12 @@ const Home = ({ setCurrentAuthor, setCurrentChatBox }) => {
           className="p-2 rounded-md text-center"
         />
         <button
-          onClick={handleJoinWorld}
+          onClick={handleJoin}
           className="bg-white text-[#212121] p-2 rounded-md"
         >
           {currentTab}
         </button>
       </form>
-      {/* <form
-        onSubmit={(e) => e.preventDefault()}
-        action="submit"
-        className="flex flex-col gap-2"
-      >
-        <input
-          type="text"
-          placeholder="Enter Unique Username"
-          className="p-2 rounded-md text-center"
-        />
-        <button className="bg-white text-[#212121] p-2 rounded-md">
-          Join World Chat
-        </button>
-      </form> */}
     </div>
   );
 };
