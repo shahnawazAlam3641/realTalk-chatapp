@@ -1,47 +1,28 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { useWebSocket } from "../hooks/useWebSocket";
 import UserContext from "../context";
 import ChatBox from "./ChatBox";
 
-interface message {
-  type: string;
-  payload: payload;
-}
+// interface message {
+//   type: string;
+//   payload: payload;
+// }
 
-interface payload {
+interface Payload {
   author: string;
   message: string;
+  roomCode?: string;
 }
 
-const WorldChat = ({ setCurrentChatBox, currentChatBox }) => {
+interface WorldChatProps {
+  setCurrentChatBox: (val: string) => void;
+  currentChatBox: string;
+}
+
+const WorldChat = ({ setCurrentChatBox, currentChatBox }: WorldChatProps) => {
   const currentAuthor: string = useContext(UserContext);
   console.log(typeof currentAuthor);
-  // const inputRef = useRef(null);
-  // const { message, sendMessage } = useWebSocket("ws://localhost:8080");
-  // const [socket, setSocket] = useState<WebSocket>();
   const socketRef = useRef<WebSocket | null>(null);
-  const [message, setMessage] = useState<payload[]>([]);
-
-  // const sendMessage = (message) => {
-  //   if (socketRef.current && socketRef.current.readyState == WebSocket.OPEN) {
-  //     socketRef.current?.send(JSON.stringify(message));
-  //   }
-  // };
-
-  // const handleSendMessage = () => {
-  //   if (inputRef.current.value == "") {
-  //     return;
-  //   } else {
-  //     sendMessage({
-  //       type: "SEND_WORLD",
-  //       payload: {
-  //         author: currentAuthor,
-  //         message: inputRef.current?.value,
-  //       },
-  //     });
-  //     inputRef.current.value = "";
-  //   }
-  // };
+  const [message, setMessage] = useState<Payload[]>([]);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:8080");
@@ -51,13 +32,14 @@ const WorldChat = ({ setCurrentChatBox, currentChatBox }) => {
       console.log("WebSocket connection established");
       ws.send(
         `{"type": "JOIN_WORLD", "payload":{"author":"${currentAuthor}","message":"let me in"}}`
-      ); // Send the initial message after connection
+      );
       console.log("message sent on joining");
     };
 
     ws.onmessage = (event) => {
       console.log(typeof event.data);
       console.log(event.data);
+
       const data = JSON.parse(event.data);
       setMessage((prev) => [...prev, data]);
     };

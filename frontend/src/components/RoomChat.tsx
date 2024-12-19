@@ -1,11 +1,20 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import ChatBox from "./ChatBox";
 import UserContext from "../context";
+import toast from "react-hot-toast";
 
 interface payload {
   author: string;
   message: string;
   roomCode?: string;
+}
+
+interface RoomChatProps {
+  setCurrentChatBox: (val: string) => void;
+  currentChatBox: string;
+  currentTab: string;
+  roomCode: string;
+  setRoomCode: (val: string) => void;
 }
 
 const RoomChat = ({
@@ -14,10 +23,9 @@ const RoomChat = ({
   currentTab,
   roomCode,
   setRoomCode,
-  setCurrentTab,
-}) => {
+}: RoomChatProps) => {
   const currentAuthor = useContext(UserContext);
-  const socketRef = useRef();
+  const socketRef = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<payload[]>([]);
 
   useEffect(() => {
@@ -83,15 +91,14 @@ const RoomChat = ({
   return (
     <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-between gap-2 rounded-lg">
       <div
+        onClick={(e) => {
+          navigator.clipboard.writeText(roomCode);
+          toast.success("Room Code copied to clipboard");
+        }}
         className="text-lg font-bold flex gap-3 p-2 hover:bg-[#313131] w-fit rounded-md text-white cursor-pointer "
         title="Click to Copy"
       >
-        Room Code:{" "}
-        <span
-          onClick={(e) => navigator.clipboard.writeText(e.target.innerText)}
-        >
-          {roomCode}
-        </span>
+        Room Code: <span>{roomCode}</span>
       </div>
       <ChatBox
         roomCode={roomCode}
@@ -99,7 +106,6 @@ const RoomChat = ({
         socketRef={socketRef}
         message={message}
         setCurrentChatBox={setCurrentChatBox}
-        // setIsRoomChat={setIsRoomChat}
       />
     </div>
   );

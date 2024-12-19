@@ -1,5 +1,23 @@
 import { useContext, useEffect, useRef } from "react";
 import UserContext from "../context";
+import toast from "react-hot-toast";
+
+interface Message {
+  type: string;
+  payload: Payload;
+}
+interface Payload {
+  author: string;
+  message: string;
+  roomCode?: string;
+}
+interface ChatBoxProps {
+  message: Payload[];
+  socketRef: React.MutableRefObject<WebSocket | null>;
+  setCurrentChatBox: (val: string) => void;
+  currentChatBox: string;
+  roomCode?: string;
+}
 
 const ChatBox = ({
   message,
@@ -7,44 +25,56 @@ const ChatBox = ({
   setCurrentChatBox,
   currentChatBox,
   roomCode,
-}) => {
+}: ChatBoxProps) => {
   const currentAuthor = useContext(UserContext);
-  const chatBoxRef = useRef(null);
-  const inputRef = useRef(null);
+  const chatBoxRef = useRef<HTMLDivElement | null>(null);
+  const chatInputRef = useRef<HTMLInputElement | null>(null);
 
-  const sendMessage = (message) => {
+  const sendMessage = (message: Message) => {
+    console.log(message);
     if (socketRef.current && socketRef.current.readyState == WebSocket.OPEN) {
-      socketRef.current?.send(JSON.stringify(message));
+      socketRef.current.send(JSON.stringify(message));
+    } else {
+      toast.error("Error occured while sending message");
     }
   };
 
   const handleSendMessage = () => {
-    if (inputRef.current.value == "") {
+    if (chatInputRef.current?.value == "") {
+      toast.error("Enter your messsage");
       return;
     }
 
     if (currentChatBox == "Room Chat") {
-      sendMessage({
-        type: "SEND_MESSAGE",
-        payload: {
-          author: currentAuthor,
-          message: inputRef.current?.value,
-          roomCode: roomCode,
-        },
-      });
-      inputRef.current.value = "";
-    }
+      if (chatInputRef.current?.value) {
+        sendMessage({
+          type: "SEND_MESSAGE",
+          payload: {
+            author: currentAuthor,
+            message: chatInputRef.current?.value,
+            roomCode: roomCode,
+          },
+        });
+      }
 
+      if (chatInputRef.current?.value) {
+        chatInputRef.current.value = "";
+      }
+    }
     if (currentChatBox == "World Chat") {
       console.log("messagesent");
-      sendMessage({
-        type: "SEND_WORLD",
-        payload: {
-          author: currentAuthor,
-          message: inputRef.current?.value,
-        },
-      });
-      inputRef.current.value = "";
+      if (chatInputRef.current?.value) {
+        sendMessage({
+          type: "SEND_WORLD",
+          payload: {
+            author: currentAuthor,
+            message: chatInputRef.current?.value,
+          },
+        });
+      }
+      if (chatInputRef.current?.value) {
+        chatInputRef.current.value = "";
+      }
     }
   };
 
@@ -55,34 +85,25 @@ const ChatBox = ({
     console.log(container.scrollTop);
     console.log(container.scrollHeight);
 
-    // if (container.scrollTop > container.scrollHeight - 450) {
-    //   container.scrollTop = container.scrollHeight;
-    // }
-
-    const isNearBottom = (container) => {
-      // Allow a small threshold (e.g., 100px) to consider the user "near" the bottom
-      // const threshold = 200;
+    const isNearBottom = (container: HTMLDivElement) => {
       return (
         container.scrollHeight - container.scrollTop - container.clientHeight <=
         200
       );
     };
 
-    // Check if the user is near the bottom, then scroll to the bottom
     if (isNearBottom(container)) {
       container.scrollTop = container.scrollHeight;
     }
 
     console.log(message);
-
-    // container.scrollTop = container.scrollHeight; // Scroll to the bottom
   }, [message]);
 
   return (
-    <>
+    <div className="max-h-[90%] flex flex-col  gap-2 overflow-y-auto px-3 scroll-smooth">
       <div
         ref={chatBoxRef}
-        className="max-h-[90%] flex flex-col gap-2 overflow-y-auto px-3 scroll-smooth"
+        className="max-h-[90%] flex flex-col  gap-2 overflow-y-auto px-3 scroll-smooth"
       >
         {message?.map((mess, index) => {
           return (
@@ -108,14 +129,14 @@ const ChatBox = ({
         className="flex gap-1 h-[10%]"
       >
         <input
-          ref={inputRef}
+          ref={chatInputRef}
           placeholder="Type message"
           className="rounded-md px-5 w-full"
         />
         <button
           onClick={() => {
             handleSendMessage();
-            // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${inputRef.current?.value}}}`)
+            // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${chatInputRef.current?.value}}}`)
           }}
           className="p-2 bg-white rounded-md"
         >
@@ -128,7 +149,7 @@ const ChatBox = ({
           Exit
         </button>
       </form>
-    </>
+    </div>
   );
 };
 

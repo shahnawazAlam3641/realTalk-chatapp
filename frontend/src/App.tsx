@@ -19,13 +19,11 @@ function App() {
 
         {currentChatBox == "" && (
           <Home
-            roomCode={roomCode}
             setRoomCode={setRoomCode}
             currentTab={currentTab}
             setCurrentTab={setCurrentTab}
             setCurrentAuthor={setCurrentAuthor}
             setCurrentChatBox={setCurrentChatBox}
-            currentChatBox={currentChatBox}
           />
         )}
 
@@ -42,7 +40,6 @@ function App() {
           <RoomChat
             roomCode={roomCode}
             setRoomCode={setRoomCode}
-            setCurrentTab={setCurrentTab}
             currentTab={currentTab}
             currentChatBox={currentChatBox}
             setCurrentChatBox={setCurrentChatBox}

@@ -1,26 +1,37 @@
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import toast from "react-hot-toast";
 
+interface HomeProps {
+  setRoomCode: (val: string) => void;
+  setCurrentAuthor: (val: string) => void;
+  setCurrentChatBox: (val: string) => void;
+  currentTab: string;
+  setCurrentTab: (val: string) => void;
+}
+
 const Home = ({
-  roomCode,
-  currentChatBox,
   setRoomCode,
   setCurrentAuthor,
   setCurrentChatBox,
   currentTab,
   setCurrentTab,
-}) => {
-  const authorInputRef = useRef(null);
+}: HomeProps) => {
+  const authorInputRef = useRef<HTMLInputElement | null>(null);
 
-  // const [currentTab, setCurrentTab] = useState("Join World Chat");
-  const roomCodeInputRef = useState(null);
+  const roomCodeInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleTabSwitch = (e) => {
-    setCurrentTab(e.target.innerText);
+  const handleTabSwitch = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const target = e.currentTarget as HTMLElement;
+    setCurrentTab(target.innerText);
   };
 
   const handleJoin = () => {
     if (authorInputRef.current?.value == "") {
+      toast.error("Please enter your username");
+      return;
+    }
+
+    if (!authorInputRef.current?.value) {
       toast.error("Please enter your username");
       return;
     }
@@ -30,6 +41,10 @@ const Home = ({
     const wss = new WebSocket("ws://localhost:8080");
 
     if (currentTab == "Join Room") {
+      if (!roomCodeInputRef.current?.value) {
+        toast.error("Pleaseenter room code");
+        return;
+      }
       setRoomCode(roomCodeInputRef.current?.value);
       wss.onopen = () => {
         wss.send(
@@ -52,42 +67,8 @@ const Home = ({
           } else {
             setCurrentChatBox("Room Chat");
             return;
-            // wss.send(
-            //   JSON.stringify({
-            //     type: "JOIN_ROOM",
-            //     payload: {
-            //       author: authorInputRef.current?.value,
-            //       roomCode: roomCodeInputRef.current?.value,
-            //     },
-            //   })
-            // );
           }
         }
-
-        // if (data.type == "ROOM_JOINED") {
-        //   setCurrentAuthor(authorInputRef.current?.value);
-        //   setCurrentChatBox("Room Chat");
-        // }
-
-        // if (data.type == "ROOM_CREATED") {
-        //   // if (!data.payload.isUsernameTaken) {
-        //   setCurrentAuthor(authorInputRef.current?.value);
-
-        //   wss.send(
-        //     JSON.stringify({
-        //       type: "JOIN_ROOM",
-        //       payload: {
-        //         roomCode: data.roomCode,
-        //         author: authorInputRef.current?.value,
-        //       },
-        //     })
-        //   );
-        //   // setCurrentChatBox("Room Chat");
-        //   // setIsWorldChat(true);
-        //   // } else {
-        //   //   toast.error("Username already exists");
-        //   // }
-        // }
       };
     }
 
@@ -111,7 +92,10 @@ const Home = ({
         }
 
         if (data.type == "ROOM_CREATED") {
-          // if (!data.payload.isUsernameTaken) {
+          if (!authorInputRef.current?.value) {
+            toast.error("Please provide username");
+            return;
+          }
           setCurrentAuthor(authorInputRef.current?.value);
 
           wss.send(
@@ -123,18 +107,11 @@ const Home = ({
               },
             })
           );
-          // setCurrentChatBox("Room Chat");
-          // setIsWorldChat(true);
-          // } else {
-          //   toast.error("Username already exists");
-          // }
         }
       };
     }
 
     if (currentTab == "Join World Chat") {
-      // const wss = new WebSocket("ws://localhost:8080");
-
       wss.onopen = () => {
         wss.send(
           JSON.stringify({
@@ -151,9 +128,12 @@ const Home = ({
 
         if (data.type == "USERNAME_VALIDATION_WORLD") {
           if (!data.payload.isUsernameTaken) {
+            if (!authorInputRef.current?.value) {
+              toast.error("Please enter username");
+              return;
+            }
             setCurrentAuthor(authorInputRef.current?.value);
             setCurrentChatBox("World Chat");
-            // setIsWorldChat(true);
           } else {
             toast.error("Username already exists");
           }

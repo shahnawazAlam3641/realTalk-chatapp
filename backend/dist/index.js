@@ -90,13 +90,16 @@ wss.on("connection", (socket) => {
                 }
             }
             if (type == "JOIN_WORLD") {
-                // const { author, message } = payload;
+                const { author, message } = payload;
+                console.log(allSockets.has(author));
                 if (allSockets.has(author)) {
-                    socket.send("{'message':'username already exists'}");
+                    socket.send(JSON.stringify({ message: "username already exist" }));
                     return;
                 }
-                allSockets.set(author, socket);
-                console.log(uniqueId + " WORLD CHAT JOINED");
+                else {
+                    allSockets.set(author, socket);
+                    console.log(uniqueId + " WORLD CHAT JOINED");
+                }
             }
             if (type == "SEND_WORLD") {
                 const { author, message } = payload;
