@@ -54,6 +54,11 @@ const RoomChat = ({
       const data = JSON.parse(event.data);
       console.log(data);
 
+      if (data.type == "ERROR") {
+        toast.error(data.message);
+        return;
+      }
+
       if (data.type == "ROOM_CREATED") {
         console.log(data);
         setRoomCode(data.roomCode);
@@ -68,7 +73,9 @@ const RoomChat = ({
           console.log("Room Joined Successfully");
           setCurrentChatBox("Room Chat");
         }
-      } else if (data.author && data.roomCode && data.message) {
+      }
+
+      if (data.author && data.roomCode && data.message) {
         console.log("firstfirstfirstfirstfirstfirst", data);
         setMessage((prev) => [...prev, data]);
       }

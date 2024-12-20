@@ -42,7 +42,7 @@ const Home = ({
 
     if (currentTab == "Join Room") {
       if (!roomCodeInputRef.current?.value) {
-        toast.error("Pleaseenter room code");
+        toast.error("Please enter room code");
         return;
       }
       setRoomCode(roomCodeInputRef.current?.value);
@@ -61,11 +61,28 @@ const Home = ({
       wss.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
+        if (data.type == "ROOM_JOINED") {
+          setCurrentChatBox("Room Chat");
+        }
+
+        if (data.type == "ERROR") {
+          toast.error(data.message);
+        }
+
         if (data.type == "USERNAME_VALIDATION_ROOM") {
           if (data.payload.isUsernameTaken) {
             toast.error("Username already exist");
           } else {
-            setCurrentChatBox("Room Chat");
+            // setCurrentChatBox("Room Chat");
+            wss.send(
+              JSON.stringify({
+                type: "JOIN_ROOM",
+                payload: {
+                  roomCode: roomCodeInputRef.current?.value,
+                  author: authorInputRef.current?.value,
+                },
+              })
+            );
             return;
           }
         }
