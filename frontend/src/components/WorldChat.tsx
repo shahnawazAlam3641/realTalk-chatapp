@@ -2,6 +2,8 @@ import { useContext, useEffect, useRef, useState } from "react";
 import UserContext from "../context";
 import ChatBox from "./ChatBox";
 
+const BASE_URL = import.meta.env.VITE_WS_SERVER;
+
 // interface message {
 //   type: string;
 //   payload: payload;
@@ -20,26 +22,20 @@ interface WorldChatProps {
 
 const WorldChat = ({ setCurrentChatBox, currentChatBox }: WorldChatProps) => {
   const currentAuthor: string = useContext(UserContext);
-  console.log(typeof currentAuthor);
   const socketRef = useRef<WebSocket | null>(null);
   const [message, setMessage] = useState<Payload[]>([]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket(BASE_URL);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connection established");
       ws.send(
         `{"type": "JOIN_WORLD", "payload":{"author":"${currentAuthor}","message":"let me in"}}`
       );
-      console.log("message sent on joining");
     };
 
     ws.onmessage = (event) => {
-      console.log(typeof event.data);
-      console.log(event.data);
-
       const data = JSON.parse(event.data);
       setMessage((prev) => [...prev, data]);
     };

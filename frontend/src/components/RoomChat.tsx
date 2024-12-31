@@ -3,6 +3,8 @@ import ChatBox from "./ChatBox";
 import UserContext from "../context";
 import toast from "react-hot-toast";
 
+const BASE_URL = import.meta.env.VITE_WS_SERVER;
+
 interface payload {
   author: string;
   message: string;
@@ -29,12 +31,10 @@ const RoomChat = ({
   const [message, setMessage] = useState<payload[]>([]);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket(BASE_URL);
     socketRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WebSocket connection established");
-      console.log("message sent on joining");
       if (currentTab == "Create Room") {
         ws.send(
           `{"type": "CREATE_ROOM", "payload":{"author":"${currentAuthor}","message":"let me in"}}`
@@ -47,12 +47,10 @@ const RoomChat = ({
           })
         );
       }
-      console.log("message sent on joining");
     };
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log(data);
 
       if (data.type == "ERROR") {
         toast.error(data.message);
@@ -60,7 +58,6 @@ const RoomChat = ({
       }
 
       if (data.type == "ROOM_CREATED") {
-        console.log(data);
         setRoomCode(data.roomCode);
         socketRef.current?.send(
           JSON.stringify({
@@ -70,13 +67,11 @@ const RoomChat = ({
         );
 
         if (data.type == "ROOM_JOINED") {
-          console.log("Room Joined Successfully");
           setCurrentChatBox("Room Chat");
         }
       }
 
       if (data.author && data.roomCode && data.message) {
-        console.log("firstfirstfirstfirstfirstfirst", data);
         setMessage((prev) => [...prev, data]);
       }
     };
@@ -98,7 +93,7 @@ const RoomChat = ({
   return (
     <div className="min-h-[90vh] max-h-[90vh] w-600px max-w-[90%] border border-white p-5 flex flex-col justify-between gap-2 rounded-lg">
       <div
-        onClick={(e) => {
+        onClick={() => {
           navigator.clipboard.writeText(roomCode);
           toast.success("Room Code copied to clipboard");
         }}

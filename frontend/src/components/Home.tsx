@@ -1,6 +1,8 @@
 import { useRef } from "react";
 import toast from "react-hot-toast";
 
+const BASE_URL = import.meta.env.VITE_WS_SERVER;
+
 interface HomeProps {
   setRoomCode: (val: string) => void;
   setCurrentAuthor: (val: string) => void;
@@ -36,126 +38,135 @@ const Home = ({
       return;
     }
 
-    setCurrentAuthor(authorInputRef.current?.value);
+    const toastId = toast.loading("Please wait.");
+    try {
+      setCurrentAuthor(authorInputRef.current?.value);
 
-    const wss = new WebSocket("ws://localhost:8080");
+      const wss = new WebSocket(BASE_URL);
 
-    if (currentTab == "Join Room") {
-      if (!roomCodeInputRef.current?.value) {
-        toast.error("Please enter room code");
-        return;
-      }
-      setRoomCode(roomCodeInputRef.current?.value);
-      wss.onopen = () => {
-        wss.send(
-          JSON.stringify({
-            type: "USERNAME_VALIDATION_ROOM",
-            payload: {
-              author: authorInputRef.current?.value,
-              roomCode: roomCodeInputRef.current?.value,
-            },
-          })
-        );
-      };
+      toast.dismiss(toastId);
 
-      wss.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type == "ROOM_JOINED") {
-          setCurrentChatBox("Room Chat");
+      if (currentTab == "Join Room") {
+        if (!roomCodeInputRef.current?.value) {
+          toast.error("Please enter room code");
+          return;
         }
-
-        if (data.type == "ERROR") {
-          toast.error(data.message);
-        }
-
-        if (data.type == "USERNAME_VALIDATION_ROOM") {
-          if (data.payload.isUsernameTaken) {
-            toast.error("Username already exist");
-          } else {
-            // setCurrentChatBox("Room Chat");
-            wss.send(
-              JSON.stringify({
-                type: "JOIN_ROOM",
-                payload: {
-                  roomCode: roomCodeInputRef.current?.value,
-                  author: authorInputRef.current?.value,
-                },
-              })
-            );
-            return;
-          }
-        }
-      };
-    }
-
-    if (currentTab == "Create Room") {
-      wss.onopen = () => {
-        wss.send(
-          JSON.stringify({
-            type: "CREATE_ROOM",
-            payload: {
-              author: authorInputRef.current?.value,
-            },
-          })
-        );
-      };
-
-      wss.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-
-        if (data.type == "ROOM_JOINED") {
-          setCurrentChatBox("Room Chat");
-        }
-
-        if (data.type == "ROOM_CREATED") {
-          if (!authorInputRef.current?.value) {
-            toast.error("Please provide username");
-            return;
-          }
-          setCurrentAuthor(authorInputRef.current?.value);
-
+        setRoomCode(roomCodeInputRef.current?.value);
+        wss.onopen = () => {
           wss.send(
             JSON.stringify({
-              type: "JOIN_ROOM",
+              type: "USERNAME_VALIDATION_ROOM",
               payload: {
-                roomCode: data.roomCode,
+                author: authorInputRef.current?.value,
+                roomCode: roomCodeInputRef.current?.value,
+              },
+            })
+          );
+        };
+
+        wss.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type == "ROOM_JOINED") {
+            setCurrentChatBox("Room Chat");
+          }
+
+          if (data.type == "ERROR") {
+            toast.error(data.message);
+          }
+
+          if (data.type == "USERNAME_VALIDATION_ROOM") {
+            if (data.payload.isUsernameTaken) {
+              toast.error("Username already exist");
+            } else {
+              // setCurrentChatBox("Room Chat");
+              wss.send(
+                JSON.stringify({
+                  type: "JOIN_ROOM",
+                  payload: {
+                    roomCode: roomCodeInputRef.current?.value,
+                    author: authorInputRef.current?.value,
+                  },
+                })
+              );
+              return;
+            }
+          }
+        };
+      }
+
+      if (currentTab == "Create Room") {
+        wss.onopen = () => {
+          wss.send(
+            JSON.stringify({
+              type: "CREATE_ROOM",
+              payload: {
                 author: authorInputRef.current?.value,
               },
             })
           );
-        }
-      };
-    }
+        };
 
-    if (currentTab == "Join World Chat") {
-      wss.onopen = () => {
-        wss.send(
-          JSON.stringify({
-            type: "USERNAME_VALIDATION_WORLD",
-            payload: {
-              username: authorInputRef.current?.value,
-            },
-          })
-        );
-      };
+        wss.onmessage = (event) => {
+          const data = JSON.parse(event.data);
 
-      wss.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+          if (data.type == "ROOM_JOINED") {
+            setCurrentChatBox("Room Chat");
+          }
 
-        if (data.type == "USERNAME_VALIDATION_WORLD") {
-          if (!data.payload.isUsernameTaken) {
+          if (data.type == "ROOM_CREATED") {
             if (!authorInputRef.current?.value) {
-              toast.error("Please enter username");
+              toast.error("Please provide username");
               return;
             }
             setCurrentAuthor(authorInputRef.current?.value);
-            setCurrentChatBox("World Chat");
-          } else {
-            toast.error("Username already exists");
+
+            wss.send(
+              JSON.stringify({
+                type: "JOIN_ROOM",
+                payload: {
+                  roomCode: data.roomCode,
+                  author: authorInputRef.current?.value,
+                },
+              })
+            );
           }
-        }
-      };
+        };
+      }
+
+      if (currentTab == "Join World Chat") {
+        wss.onopen = () => {
+          wss.send(
+            JSON.stringify({
+              type: "USERNAME_VALIDATION_WORLD",
+              payload: {
+                username: authorInputRef.current?.value,
+              },
+            })
+          );
+        };
+
+        wss.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+
+          if (data.type == "USERNAME_VALIDATION_WORLD") {
+            if (!data.payload.isUsernameTaken) {
+              if (!authorInputRef.current?.value) {
+                toast.error("Please enter username");
+                return;
+              }
+              setCurrentAuthor(authorInputRef.current?.value);
+              setCurrentChatBox("World Chat");
+            } else {
+              toast.error("Username already exists");
+            }
+          }
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      toast.dismiss(toastId);
+      toast.error("Something went wrong");
     }
   };
 

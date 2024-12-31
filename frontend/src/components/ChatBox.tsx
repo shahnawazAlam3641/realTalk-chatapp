@@ -31,7 +31,6 @@ const ChatBox = ({
   const chatInputRef = useRef<HTMLInputElement | null>(null);
 
   const sendMessage = (message: Message) => {
-    console.log(message);
     if (socketRef.current && socketRef.current.readyState == WebSocket.OPEN) {
       socketRef.current.send(JSON.stringify(message));
     } else {
@@ -62,7 +61,6 @@ const ChatBox = ({
       }
     }
     if (currentChatBox == "World Chat") {
-      console.log("messagesent");
       if (chatInputRef.current?.value) {
         sendMessage({
           type: "SEND_WORLD",
@@ -82,9 +80,6 @@ const ChatBox = ({
     const container = chatBoxRef.current;
     if (!container) return;
 
-    console.log(container.scrollTop);
-    console.log(container.scrollHeight);
-
     const isNearBottom = (container: HTMLDivElement) => {
       return (
         container.scrollHeight - container.scrollTop - container.clientHeight <=
@@ -95,8 +90,6 @@ const ChatBox = ({
     if (isNearBottom(container)) {
       container.scrollTop = container.scrollHeight;
     }
-
-    console.log(message);
   }, [message]);
 
   return (
@@ -136,7 +129,6 @@ const ChatBox = ({
         <button
           onClick={() => {
             handleSendMessage();
-            // console.log(`{"type": "SEND_WORLD", "payload":{"author":"shaha","message":${chatInputRef.current?.value}}}`)
           }}
           className="p-2 bg-white rounded-md"
         >
