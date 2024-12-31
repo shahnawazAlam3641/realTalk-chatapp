@@ -46,6 +46,28 @@ function App() {
           />
         )}
       </div>
+
+      <div className="flex justify-between absolute bottom-0 w-full p-2">
+        <span className="text-xs text-white">
+          Built with 🤍 by Shahnawaz Alam
+        </span>
+        <div className="flex gap-2">
+          <a
+            className="text-xs text-white hover:underline"
+            href="https://github.com/shahnawazAlam3641/realTalk-chatapp"
+            target="_blank"
+          >
+            Github
+          </a>
+          <a
+            className="text-xs text-white hover:underline"
+            href="https://www.linkedin.com/in/alam-shahnawaz/"
+            target="_blank"
+          >
+            LinkedIn
+          </a>
+        </div>
+      </div>
     </UserContext.Provider>
   );
 }

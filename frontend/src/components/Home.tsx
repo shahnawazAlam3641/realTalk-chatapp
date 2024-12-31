@@ -172,10 +172,10 @@ const Home = ({
 
   return (
     <div className="relative flex flex-col gap-5 p-6 border-white border rounded-lg w-[450px] max-w-[90vw]">
-      <div className="flex justify-between">
+      <div className="flex justify-between gap-2">
         <button
           onClick={handleTabSwitch}
-          className={`p-2  rounded-md font-medium  ${
+          className={`p-2 rounded-md font-medium  ${
             currentTab == "Join World Chat"
               ? "bg-[#313131] text-white"
               : "bg-white text-[#212121]"
